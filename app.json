@@ -1,0 +1,12 @@
+{
+  "name": "QSHPQ",
+  "displayName": "QSHPQ",
+  "expo": {
+    "name": "QSHPQ",
+    "slug": "QSHPQ",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
