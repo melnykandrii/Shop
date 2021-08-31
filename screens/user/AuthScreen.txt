@@ -1,0 +1,159 @@
+import * as authActions from '../../store/actions/auth';
+
+import { Button, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import React, { useCallback, useReducer } from 'react';
+
+import Card from '../../components/UI/Card';
+import Colors from '../../constants/Colors';
+import DefaultInputCont from '../../components/UI/InputComponent';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useDispatch } from 'react-redux';
+
+const FORM_INPUT_UPDATE = 'FORM_INPUT_UPDATE';
+
+const formReducer = (state, action) => {
+    if (action.type === FORM_INPUT_UPDATE) {
+        const updatedValues = {
+            ...state.inputValues,
+            [action.input]: action.value
+        };
+        const updatedValidities = {
+            ...state.inputValidities,
+            [action.input]: action.isValid
+        };
+        let updatedFormIsValid = true;
+        for (const key in updatedValidities){
+            updatedFormIsValid = updatedFormIsValid && updatedValidities[key];
+        }
+        return {
+            formIsValid: updatedFormIsValid,
+            inputValidities: updatedValidities,
+            inputValues: updatedValues
+        };
+    }
+    return state;
+};
+
+const AuthScreen = props => {
+    const dispatch = useDispatch();
+
+    const [formState, dispatchFormState] = useReducer(formReducer, {
+        inputValues: {
+            email: '',
+            password: ''
+        }, 
+        inputValidities: {
+            email: false,
+            password: false
+        }, 
+        formIsValid: false
+    });
+
+    const signupHandler = () => {
+        dispatch(
+            authActions.signup(
+                formState.inputValues.email, 
+                formState.inputValues.password
+            )
+        );
+    };
+
+    const inputChangeHandler = useCallback(
+        (inputIdentifier, inputValue, inputValidity) => {
+            dispatchFormState({
+                type: FORM_INPUT_UPDATE, 
+                value: inputValue,
+                isValid: inputValidity,
+                input: inputIdentifier
+            });
+        }, 
+        [dispatchFormState]
+    );
+
+    return(
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? 'padding' : 'height'}
+            keyboardVerticalOffset={50}
+            style={styles.screen}
+        >
+            <LinearGradient colors={['#ffedff', '#ffe3ff']} style={styles.gradient}>
+                <Card style={styles.authContainer}>
+                    <ScrollView>
+                        <DefaultInputCont
+                            id="email"
+                            label='E-Mail'
+                            errorText='Please enter a valid email address.'
+                            keyboard='email-address' 
+                            autoCapitalize='none' 
+                            returnKey='next'
+                           // submit={() => this.passRef.focus()}
+                            blur={false}
+                            placeholder="MyEmail@gmail.com"
+                            initialValue=""
+                            required
+                            email
+                            onInputChange={inputChangeHandler}
+                            inlineImageLeft='email'
+                        />
+                        <DefaultInputCont
+                            id="password"
+                            label='Password'
+                            errorText='Please enter a valid password.'
+                            keyboard='default'
+                            secureTextEntry
+                            minLength={5}
+                            autoCapitalize='none' 
+                            returnKey='done'
+                           // submit={() => {}}
+                           // inputRef={passRef => this.passRef = passRef}
+                            blur={false}
+                            placeholder="MyPassword"
+                            initialValue=""
+                            required
+                            email
+                            onInputChange={inputChangeHandler}
+                            inlineImageLeft='pass'
+                        />
+                        <View style={styles.buttonContainer}>
+                            <Button 
+                                title='Login' 
+                                color={Platform.OS === 'android' ? Colors.headdroid : Colors.labelios} 
+                                onPress={signupHandler}
+                            />
+                        </View>
+                        <View style={styles.buttonContainer}>
+                            <Button 
+                                title='Sign Up' 
+                                color={Platform.OS === 'android' ? Colors.headdroid : Colors.labelios}
+                                onPress={signupHandler}
+                            />
+                        </View>
+                    </ScrollView>
+                </Card>
+            </LinearGradient>
+        </KeyboardAvoidingView>
+    )
+};
+
+const styles = StyleSheet.create({
+    screen: {
+        flex: 1  
+    },
+    gradient: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        flex:1
+    },
+    authContainer: {
+        width: '80%',
+        maxWidth: 400,
+        maxHeight: 400,
+        padding: 20
+    },
+    buttonContainer: {
+        marginTop: 10
+    }
+    
+
+});
+export default AuthScreen;
